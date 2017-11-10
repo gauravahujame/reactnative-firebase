@@ -59,9 +59,17 @@ export default class LoginScreen extends React.Component {
     render() {
         return <View>
             <FormLabel>Email</FormLabel>
-            <FormInput onChangeText={email => this.setState({ email })} />
+            <FormInput
+            value={this.state.email}
+            placeholder='john.doe@gmail.com'
+            onChangeText={email => this.setState({ email })} />
             <FormLabel>Password</FormLabel>
-            <FormInput onChangeText={password => this.setState({ password })} />
+            <FormInput
+            value={this.state.password}
+            secureTextEntry
+            placeholder='******'
+            onChangeText={password => this.setState({ password })} />
+            <Text>{this.state.error}</Text>
             {this.renderButtonOrLoading()}
         </View>
     }
