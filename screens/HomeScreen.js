@@ -1,188 +1,157 @@
 import React from 'react';
 import {
-  Image,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  TextInput,
   View,
+  TouchableHighlight,
+  ListView
 } from 'react-native';
-import { WebBrowser } from 'expo';
-
-import { MonoText } from '../components/StyledText';
+import { database } from '../firebase';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.welcomeContainer}>
-            <Image
-              source={
-                __DEV__
-                  ? require('../assets/images/robot-dev.png')
-                  : require('../assets/images/robot-prod.png')
-              }
-              style={styles.welcomeImage}
-            />
-          </View>
-
-          <View style={styles.getStartedContainer}>
-            {this._maybeRenderDevelopmentModeWarning()}
-
-            <Text style={styles.getStartedText}>Get started by opening</Text>
-
-            <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
-            </View>
-
-            <Text style={styles.getStartedText}>
-              Change this text and your app will automatically reload.
-            </Text>
-          </View>
-
-          <View style={styles.helpContainer}>
-            <TouchableOpacity onPress={this._handleHelpPress} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-
-        <View style={styles.tabBarInfoContainer}>
-          <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
-
-          <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-            <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
-          </View>
-        </View>
-      </View>
-    );
+  constructor(props) {
+    super(props);
+    this.state = {
+      newTodo: '',
+      todoSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
+    }
+    this.itemsRef = database.child('items');
+    this.items = [];
   }
 
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
+  componentDidMount(){
+    this.itemsRef.on('child_added', (dataSnapshot) => {
+      this.items.push({id: dataSnapshot.key, text: dataSnapshot.val().todo});
+      this.setState({
+        todoSource: this.state.todoSource.cloneWithRows(this.items)
+      });
+    });
 
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
-        </Text>
-      );
+    this.itemsRef.on('child_removed', (dataSnapshot) => {
+      this.items.filter((x) => x.id !== dataSnapshot.key);
+      this.setState({
+        todoSource: this.state.todoSource.cloneWithRows(this.items)
+      });
+    });
+  }
+
+  addTodo(){
+    if(this.state.newTodo !== ''){
+      this.itemsRef.push({
+        todo: this.state.newTodo
+      });
+      this.setState({
+        newTodo: ''
+      })
     }
   }
 
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
+  removeTodo(rowData){
+    this.itemsRef.child(rowData.id).remove();
+  }
 
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
+  renderRow(rowData) {
+    return (
+      <TouchableHighlight
+        underlayColor='#dddddd'
+        onPress={() => this.removeTodo(rowData)}>
+        <View>
+          <View style={styles.row}>
+            <Text style={styles.todoText}>{rowData.text}</Text>
+          </View>
+          <View style={styles.separator} />
+        </View>
+      </TouchableHighlight>
     );
-  };
+  }
+
+  render() {
+    return (
+      <View style={styles.appContainer}>
+        <View style={styles.titleView}>
+          <Text style={styles.titleText}>
+            My Todos
+          </Text>
+        </View>
+        <View style={styles.inputcontainer}>
+          <TextInput style={styles.input} onChangeText={(text) => this.setState({newTodo: text})} value={this.state.newTodo}/>
+          <TouchableHighlight
+            style={styles.button}
+            onPress={() => this.addTodo()}
+            underlayColor='#dddddd'>
+            <Text style={styles.btnText}>Add!</Text>
+          </TouchableHighlight>
+        </View>
+        <ListView
+          dataSource={this.state.todoSource}
+          renderRow={this.renderRow.bind(this)} />
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  appContainer:{
+    flex: 1
   },
-  developmentModeText: {
-    marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
-    fontSize: 14,
-    lineHeight: 19,
-    textAlign: 'center',
-  },
-  contentContainer: {
+  titleView:{
+    backgroundColor: '#48afdb',
     paddingTop: 30,
+    paddingBottom: 10,
+    flexDirection: 'row'
   },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  welcomeImage: {
-    width: 100,
-    height: 80,
-    resizeMode: 'contain',
-    marginTop: 3,
-    marginLeft: -10,
-  },
-  getStartedContainer: {
-    alignItems: 'center',
-    marginHorizontal: 50,
-  },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
-  },
-  codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    lineHeight: 24,
+  titleText:{
+    color: '#fff',
     textAlign: 'center',
+    fontWeight: 'bold',
+    flex: 1,
+    fontSize: 20,
   },
-  tabBarInfoContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: 'black',
-        shadowOffset: { height: -3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 20,
-      },
-    }),
-    alignItems: 'center',
-    backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
-  },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    textAlign: 'center',
-  },
-  navigationFilename: {
+  inputcontainer: {
     marginTop: 5,
+    padding: 10,
+    flexDirection: 'row'
   },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: 'center',
+  button: {
+    height: 36,
+    flex: 2,
+    flexDirection: 'row',
+    backgroundColor: '#48afdb',
+    justifyContent: 'center',
+    color: '#FFFFFF',
+    borderRadius: 4,
   },
-  helpLink: {
-    paddingVertical: 15,
+  btnText: {
+    fontSize: 18,
+    color: '#fff',
+    marginTop: 6,
   },
-  helpLinkText: {
-    fontSize: 14,
-    color: '#2e78b7',
+  input: {
+    height: 36,
+    padding: 4,
+    marginRight: 5,
+    flex: 4,
+    fontSize: 18,
+    borderWidth: 1,
+    borderColor: '#48afdb',
+    borderRadius: 4,
+    color: '#48BBEC'
   },
+  row: {
+    flexDirection: 'row',
+    padding: 12,
+    height: 44
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#CCCCCC',
+  },
+  todoText: {
+    flex: 1,
+  }
 });

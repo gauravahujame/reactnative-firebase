@@ -1,20 +1,15 @@
 import React from 'react';
 import { View, Button, Text } from 'react-native';
-import * as firebase from 'firebase';
 import MainTabNavigator from '../navigation/MainTabNavigator';
 import { StackNavigator } from 'react-navigation';
 import { FormLabel, FormInput } from 'react-native-elements';
-
-firebase.initializeApp({
-    apiKey: "AIzaSyBjoTOHGREN02gf457lgKVjKD8DZfTvPDs",
-    authDomain: "reactnative-todo-9f7f0.firebaseapp.com",
-    databaseURL: "https://reactnative-todo-9f7f0.firebaseio.com",
-    projectId: "reactnative-todo-9f7f0",
-    storageBucket: "reactnative-todo-9f7f0.appspot.com",
-    messagingSenderId: "1000990672369"
-});
+import { auth } from '../firebase'
 
 export default class LoginScreen extends React.Component {
+    static navigationOptions = {
+        header: null,
+    };
+
     constructor(props) {
         super(props);
         this.state = { email: '', password: '', error: '', loading: false };
@@ -23,7 +18,7 @@ export default class LoginScreen extends React.Component {
     onLoginPress() {
         this.setState({ error: '', loading: true });
         const { email, password } = this.state;
-        firebase.auth().signInWithEmailAndPassword(email, password)
+        auth.signInWithEmailAndPassword(email, password)
             .then(() => {
                 this.setState({ error: '', loading: false });
                 this.props.navigation.navigate('Main');
@@ -36,7 +31,7 @@ export default class LoginScreen extends React.Component {
     onSignUpPress() {
         this.setState({ error: '', loading: true });
         const { email, password } = this.state;
-        firebase.auth().createUserWithEmailAndPassword(email, password)
+        auth.createUserWithEmailAndPassword(email, password)
             .then(() => {
                 this.setState({ error: '', loading: false });
                 this.props.navigation.navigate('Main');
@@ -60,15 +55,15 @@ export default class LoginScreen extends React.Component {
         return <View>
             <FormLabel>Email</FormLabel>
             <FormInput
-            value={this.state.email}
-            placeholder='john.doe@gmail.com'
-            onChangeText={email => this.setState({ email })} />
+                value={this.state.email}
+                placeholder='john.doe@gmail.com'
+                onChangeText={email => this.setState({ email })} />
             <FormLabel>Password</FormLabel>
             <FormInput
-            value={this.state.password}
-            secureTextEntry
-            placeholder='******'
-            onChangeText={password => this.setState({ password })} />
+                value={this.state.password}
+                secureTextEntry
+                placeholder='******'
+                onChangeText={password => this.setState({ password })} />
             <Text>{this.state.error}</Text>
             {this.renderButtonOrLoading()}
         </View>
