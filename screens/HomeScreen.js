@@ -21,23 +21,25 @@ export default class HomeScreen extends React.Component {
       newTodo: '',
       todoSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
     }
-    this.userId = this.props.navigation.state.params.user;
-    this.itemsRef = database.child(this.userId);
     this.items = [];
   }
 
   componentDidMount(){
-    this.itemsRef.on('child_added', (dataSnapshot) => {
-      this.items.push({id: dataSnapshot.key, text: dataSnapshot.val().todo});
-      this.setState({
-        todoSource: this.state.todoSource.cloneWithRows(this.items)
+    AsyncStorage.getItem('user_id').then(uid => {
+      this.userId = uid;
+      this.itemsRef = database.child(this.userId);
+      this.itemsRef.on('child_added', (dataSnapshot) => {
+        this.items.push({ id: dataSnapshot.key, text: dataSnapshot.val().todo });
+        this.setState({
+          todoSource: this.state.todoSource.cloneWithRows(this.items)
+        });
       });
-    });
 
-    this.itemsRef.on('child_removed', (dataSnapshot) => {
-      this.items.filter((x) => x.id !== dataSnapshot.key);
-      this.setState({
-        todoSource: this.state.todoSource.cloneWithRows(this.items)
+      this.itemsRef.on('child_removed', (dataSnapshot) => {
+        this.items.filter((x) => x.id !== dataSnapshot.key);
+        this.setState({
+          todoSource: this.state.todoSource.cloneWithRows(this.items)
+        });
       });
     });
   }

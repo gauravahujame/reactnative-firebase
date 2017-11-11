@@ -30,7 +30,7 @@ export default class LoginScreen extends React.Component {
             .then((user) => {
                 this.saveLogin(user.uid);
                 this.setState({ error: '', loading: false });
-                this.props.navigation.navigate('Main', { user: user.uid });
+                this.props.navigation.navigate('Main');
             })
             .catch(() => {
                 this.setState({ error: 'Authentication Failed', loading: false });
@@ -42,9 +42,9 @@ export default class LoginScreen extends React.Component {
         const { email, password } = this.state;
         auth.createUserWithEmailAndPassword(email, password)
             .then((user) => {
-                this.saveLogin(user.uid);               
+                this.saveLogin(user.uid);
                 this.setState({ error: '', loading: false });
-                this.props.navigation.navigate('Main', { user: user.uid });
+                this.props.navigation.navigate('Main');
             })
             .catch(() => {
                 this.setState({ error: 'Authentication Failed', loading: false });
