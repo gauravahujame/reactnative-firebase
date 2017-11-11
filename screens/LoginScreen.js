@@ -4,6 +4,7 @@ import MainTabNavigator from '../navigation/MainTabNavigator';
 import { StackNavigator } from 'react-navigation';
 import { FormLabel, FormInput } from 'react-native-elements';
 import { auth } from '../firebase'
+import { NavigationActions } from 'react-navigation'
 
 export default class LoginScreen extends React.Component {
     static navigationOptions = {
@@ -23,6 +24,16 @@ export default class LoginScreen extends React.Component {
         }
     }
 
+    resetNavigationStack(screen) {
+        const resetAction = NavigationActions.reset({
+            index: 0,
+            actions: [
+                NavigationActions.navigate({ routeName: screen })
+            ]
+        });
+        this.props.navigation.dispatch(resetAction);
+    }
+
     onLoginPress() {
         this.setState({ error: '', loading: true });
         const { email, password } = this.state;
@@ -30,7 +41,7 @@ export default class LoginScreen extends React.Component {
             .then((user) => {
                 this.saveLogin(user.uid);
                 this.setState({ error: '', loading: false });
-                this.props.navigation.navigate('Main');
+                this.resetNavigationStack('Main');
             })
             .catch(() => {
                 this.setState({ error: 'Authentication Failed', loading: false });
@@ -44,7 +55,7 @@ export default class LoginScreen extends React.Component {
             .then((user) => {
                 this.saveLogin(user.uid);
                 this.setState({ error: '', loading: false });
-                this.props.navigation.navigate('Main');
+                this.resetNavigationStack('Main');
             })
             .catch(() => {
                 this.setState({ error: 'Authentication Failed', loading: false });

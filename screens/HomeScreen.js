@@ -9,6 +9,7 @@ import {
   AsyncStorage
 } from 'react-native';
 import { database } from '../firebase';
+import { NavigationActions } from 'react-navigation'
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -19,12 +20,12 @@ export default class HomeScreen extends React.Component {
     super(props);
     this.state = {
       newTodo: '',
-      todoSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
+      todoSource: new ListView.DataSource({ rowHasChanged: (row1, row2) => row1 !== row2 })
     }
     this.items = [];
   }
 
-  componentDidMount(){
+  componentDidMount() {
     AsyncStorage.getItem('user_id').then(uid => {
       this.userId = uid;
       this.itemsRef = database.child(this.userId);
@@ -42,13 +43,13 @@ export default class HomeScreen extends React.Component {
         });
       });
     })
-    .catch(() => {
-      this.props.navigation.navigate('Login');
-    });
+      .catch(() => {
+        this.resetNavigationStack('Login');
+      });
   }
 
-  addTodo(){
-    if(this.state.newTodo !== ''){
+  addTodo() {
+    if (this.state.newTodo !== '') {
       this.itemsRef.push({
         todo: this.state.newTodo
       });
@@ -58,7 +59,7 @@ export default class HomeScreen extends React.Component {
     }
   }
 
-  removeTodo(rowData){
+  removeTodo(rowData) {
     this.itemsRef.child(rowData.id).remove();
   }
 
@@ -77,10 +78,20 @@ export default class HomeScreen extends React.Component {
     );
   }
 
-  logout(){
+  logout() {
     AsyncStorage.removeItem('user_id').then(() => {
-      this.props.navigation.navigate('Login');
+      this.resetNavigationStack('Login');
     })
+  }
+
+  resetNavigationStack(screen) {
+    const resetAction = NavigationActions.reset({
+      index: 0,
+      actions: [
+        NavigationActions.navigate({ routeName: screen })
+      ]
+    });
+    this.props.navigation.dispatch(resetAction);
   }
 
   render() {
@@ -96,7 +107,7 @@ export default class HomeScreen extends React.Component {
           </Text>
         </View>
         <View style={styles.inputcontainer}>
-          <TextInput style={styles.input} onChangeText={(text) => this.setState({newTodo: text})} value={this.state.newTodo}/>
+          <TextInput style={styles.input} onChangeText={(text) => this.setState({ newTodo: text })} value={this.state.newTodo} />
           <TouchableHighlight
             style={styles.button}
             onPress={() => this.addTodo()}
@@ -113,23 +124,23 @@ export default class HomeScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  appContainer:{
+  appContainer: {
     flex: 1
   },
-  titleView:{
+  titleView: {
     backgroundColor: '#48afdb',
     paddingTop: 30,
     paddingBottom: 10,
     flexDirection: 'row'
   },
-  titleText:{
+  titleText: {
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
     flex: 4,
     fontSize: 20,
   },
-  logoutButton:{
+  logoutButton: {
     color: '#fff',
     textAlign: 'center',
     flex: 1,
