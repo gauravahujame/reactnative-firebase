@@ -41,6 +41,9 @@ export default class HomeScreen extends React.Component {
           todoSource: this.state.todoSource.cloneWithRows(this.items)
         });
       });
+    })
+    .catch(() => {
+      this.props.navigation.navigate('Login');
     });
   }
 
@@ -74,12 +77,22 @@ export default class HomeScreen extends React.Component {
     );
   }
 
+  logout(){
+    AsyncStorage.removeItem('user_id').then(() => {
+      this.props.navigation.navigate('Login');
+    })
+  }
+
   render() {
     return (
       <View style={styles.appContainer}>
         <View style={styles.titleView}>
           <Text style={styles.titleText}>
             My Todos
+          </Text>
+          <Text style={styles.logoutButton}
+            onPress={() => this.logout()}>
+            Logout
           </Text>
         </View>
         <View style={styles.inputcontainer}>
@@ -113,8 +126,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
-    flex: 1,
+    flex: 4,
     fontSize: 20,
+  },
+  logoutButton:{
+    color: '#fff',
+    textAlign: 'center',
+    flex: 1,
+    fontSize: 15,
   },
   inputcontainer: {
     marginTop: 5,
