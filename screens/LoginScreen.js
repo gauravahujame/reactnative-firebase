@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Button, Text } from 'react-native';
+import { View, Button, Text, AsyncStorage } from 'react-native';
 import MainTabNavigator from '../navigation/MainTabNavigator';
 import { StackNavigator } from 'react-navigation';
 import { FormLabel, FormInput } from 'react-native-elements';
@@ -15,13 +15,22 @@ export default class LoginScreen extends React.Component {
         this.state = { email: '', password: '', error: '', loading: false };
     }
 
+    async saveLogin(userId) {
+        try {
+            await AsyncStorage.setItem('user_id', userId);
+        } catch (error) {
+            console.error('AsyncStorage error: ' + error.message);
+        }
+    }
+
     onLoginPress() {
         this.setState({ error: '', loading: true });
         const { email, password } = this.state;
         auth.signInWithEmailAndPassword(email, password)
-            .then(() => {
+            .then((user) => {
+                this.saveLogin(user.uid);
                 this.setState({ error: '', loading: false });
-                this.props.navigation.navigate('Main');
+                this.props.navigation.navigate('Main', { user: user.uid });
             })
             .catch(() => {
                 this.setState({ error: 'Authentication Failed', loading: false });
@@ -32,9 +41,10 @@ export default class LoginScreen extends React.Component {
         this.setState({ error: '', loading: true });
         const { email, password } = this.state;
         auth.createUserWithEmailAndPassword(email, password)
-            .then(() => {
+            .then((user) => {
+                this.saveLogin(user.uid);               
                 this.setState({ error: '', loading: false });
-                this.props.navigation.navigate('Main');
+                this.props.navigation.navigate('Main', { user: user.uid });
             })
             .catch(() => {
                 this.setState({ error: 'Authentication Failed', loading: false });

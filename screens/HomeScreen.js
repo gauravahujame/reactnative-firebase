@@ -5,7 +5,8 @@ import {
   TextInput,
   View,
   TouchableHighlight,
-  ListView
+  ListView,
+  AsyncStorage
 } from 'react-native';
 import { database } from '../firebase';
 
@@ -20,7 +21,8 @@ export default class HomeScreen extends React.Component {
       newTodo: '',
       todoSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
     }
-    this.itemsRef = database.child('items');
+    this.userId = this.props.navigation.state.params.user;
+    this.itemsRef = database.child(this.userId);
     this.items = [];
   }
 
