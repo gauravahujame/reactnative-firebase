@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Button, Text, AsyncStorage } from 'react-native';
+import { View, Button, Text,
+    AsyncStorage, TouchableOpacity,
+    KeyboardAvoidingView, StyleSheet,
+    Image, TextInput } from 'react-native';
 import MainTabNavigator from '../navigation/MainTabNavigator';
 import { StackNavigator } from 'react-navigation';
 import { FormLabel, FormInput } from 'react-native-elements';
@@ -44,7 +47,7 @@ export default class LoginScreen extends React.Component {
                 this.resetNavigationStack('Main');
             })
             .catch(() => {
-                this.setState({ error: 'Authentication Failed', loading: false });
+                this.setState({ error: 'Authentication Failed. Try Again!', loading: false });
             })
     }
 
@@ -58,35 +61,104 @@ export default class LoginScreen extends React.Component {
                 this.resetNavigationStack('Main');
             })
             .catch(() => {
-                this.setState({ error: 'Authentication Failed', loading: false });
+                this.setState({ error: 'Authentication Failed. Try Again!', loading: false });
             })
     }
 
     renderButtonOrLoading() {
         if (this.state.loading) {
-            return <Text>Loading</Text>
+            return <Text style={styles.centerText}>Loading</Text>
         }
         return <View>
-            <Button onPress={this.onLoginPress.bind(this)} title='Login' />
-            <Button onPress={this.onSignUpPress.bind(this)} title='Sign Up' />
+            <TouchableOpacity style={styles.buttonContainer} onPress={this.onLoginPress.bind(this)}>
+                <Text style={styles.buttonText}>LOGIN</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonContainer} onPress={this.onSignUpPress.bind(this)}>
+                <Text style={styles.buttonText}>SIGNUP</Text>
+            </TouchableOpacity>
         </View>
     }
 
     render() {
-        return <View>
-            <FormLabel>Email</FormLabel>
-            <FormInput
+        return <KeyboardAvoidingView behavior="padding" style={styles.container}>
+            <View style={styles.logoContainer}>
+                <Image style={styles.logo}
+                    source={require('../images/logo.png')} />
+                    <Text style={styles.title}>ToDo App made using React Native and Firebase</Text>
+            </View>
+            <View style={styles.formContainer}>
+            <TextInput
+                style={styles.input}
                 value={this.state.email}
                 placeholder='john.doe@gmail.com'
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                underlineColorAndroid='rgba(0,0,0,0)'
+                returnKeyType="next"
+                onSubmitEditing={() => this.passwordInput.focus()}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
                 onChangeText={email => this.setState({ email })} />
-            <FormLabel>Password</FormLabel>
-            <FormInput
+            <TextInput
+                style={styles.input}
                 value={this.state.password}
                 secureTextEntry
                 placeholder='******'
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                underlineColorAndroid='rgba(0,0,0,0)'
+                returnKeyType="go"
+                ref={(input) => this.passwordInput = input}
                 onChangeText={password => this.setState({ password })} />
-            <Text>{this.state.error}</Text>
+            <Text style={styles.centerText}>{this.state.error}</Text>
             {this.renderButtonOrLoading()}
-        </View>
+            </View>
+        </KeyboardAvoidingView>
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#3498db'
+    },
+    logoContainer: {
+        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: 'center'
+    },
+    logo: {
+        width: 100,
+        height: 100
+    },
+    title: {
+        color: '#FFF',
+        marginTop: 10,
+        width: 160,
+        textAlign: 'center',
+        opacity: 0.9
+    },
+    formContainer: {
+        margin: 30
+    },
+    input: {
+        height: 40,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        marginBottom: 20,
+        color: '#FFF',
+        paddingHorizontal: 10 
+    },
+    buttonContainer: {
+        backgroundColor: '#2980b9',
+        paddingVertical: 15,
+        marginBottom: 10
+    },
+    buttonText: {
+        textAlign: 'center',
+        color: '#FFFFFF',
+        fontWeight: '700'
+    },
+    centerText: {
+        textAlign: 'center',
+        marginBottom: 5
+    }
+})
