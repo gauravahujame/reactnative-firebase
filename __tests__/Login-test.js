@@ -20,6 +20,6 @@ it('login & submit button rendered correctly', () => {
     const tree = renderer.create(
         <LoginScreen />
     ).toJSON();
-    expect(tree.children[5].children[0].children[0].children[0].children[0]).toContain("Login");
-    expect(tree.children[5].children[1].children[0].children[0].children[0]).toContain("Sign Up");    
+    expect(tree.children[1].children[3].children[0].children[0].children).toContain("LOGIN");
+    expect(tree.children[1].children[3].children[1].children[0].children).toContain("SIGNUP");    
 });
